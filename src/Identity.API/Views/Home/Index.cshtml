@@ -1,32 +1,23 @@
-@using System.Diagnostics
-
-@{
-    var version = FileVersionInfo.GetVersionInfo(typeof(Duende.IdentityServer.Hosting.IdentityServerMiddleware).Assembly.Location).ProductVersion.Split('+').First();
-}
-
 <div class="welcome-page">
     <h1>
         <img src="~/icon.jpg">
-        Welcome to IdentityServer4
-        <small class="text-muted">(version @version)</small>
+        eShop Identity
     </h1>
 
     <ul>
         <li>
-            IdentityServer publishes a
+            The server publishes a
             <a href="~/.well-known/openid-configuration">discovery document</a>
-            where you can find metadata and links to all the endpoints, key material, etc.
+            listing its endpoints, supported features and the location of its key material.
         </li>
         <li>
-            Click <a href="~/diagnostics">here</a> to see the claims for your current session.
+            Signing keys are published at
+            <a href="~/.well-known/jwks">the JWKS endpoint</a>, which is how every API in eShop
+            validates the tokens it receives without sharing a secret with this service.
         </li>
         <li>
-            Click <a href="~/grants">here</a> to manage your stored grants.
-        </li>
-        <li>
-            Here are links to the
-            <a href="https://github.com/identityserver/IdentityServer4">source code repository</a>,
-            and <a href="https://github.com/IdentityServer/IdentityServer4/tree/main/samples">ready to use samples</a>.
+            The OpenID Provider is
+            <a href="https://github.com/Abblix/Oidc.Server">Abblix OIDC Server</a>.
         </li>
     </ul>
 </div>

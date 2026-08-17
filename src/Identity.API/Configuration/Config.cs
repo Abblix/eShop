@@ -1,192 +1,132 @@
-﻿namespace eShop.Identity.API.Configuration
+using System.Security.Cryptography;
+using System.Text;
+
+namespace eShop.Identity.API.Configuration
 {
     public class Config
     {
-        // ApiResources define the apis in your system
-        public static IEnumerable<ApiResource> GetApis()
-        {
-            return new List<ApiResource>
+        // The API scopes eShop protects. Abblix registers the six standard OIDC scopes
+        // (openid, profile, email, address, phone, offline_access) on its own, so only the
+        // application-specific ones belong here. A scope absent from this list is refused as
+        // invalid_scope no matter what a client lists in AllowedScopes: AllowedScopes narrows
+        // the set, it never introduces a scope.
+        //
+        // A scope also declares which claims it asks for, and that ask is what reaches
+        // IUserInfoProvider. The checkout form and the chatbot read the address and card claims
+        // from the signed-in principal, so those claims hang off the orders scope: it is the one
+        // both the web app and the mobile app request, and it is the flow the data serves.
+        public static ScopeDefinition[] GetScopes() =>
+        [
+            new("orders",
+                "last_name",
+                "card_number",
+                "card_holder",
+                "card_security_number",
+                "card_expiration",
+                "address_city",
+                "address_country",
+                "address_state",
+                "address_street",
+                "address_zip_code"),
+            new("basket"),
+            new("webhooks"),
+        ];
+
+        // Clients that may ask this server for tokens.
+        public static ClientInfo[] GetClients(IConfiguration configuration) =>
+        [
+            new ClientInfo("maui")
             {
-                new ApiResource("orders", "Orders Service"),
-                new ApiResource("basket", "Basket Service"),
-                new ApiResource("webhooks", "Webhooks registration Service"),
-            };
-        }
+                ClientName = "eShop MAUI OpenId Client",
+                ClientSecrets = [Secret("secret")],
 
-        // ApiScope is used to protect the API 
-        //The effect is the same as that of API resources in IdentityServer 3.x
-        public static IEnumerable<ApiScope> GetApiScopes()
-        {
-            return new List<ApiScope>
+                // IdentityModel's OidcClient, which the MAUI app uses, sends the secret in the
+                // Authorization header. Abblix matches the registered method exactly, so naming
+                // the wrong one here fails the token exchange after a successful login.
+                TokenEndpointAuthMethod = ClientAuthenticationMethods.ClientSecretBasic,
+
+                // offline_access grants the refresh TOKEN; refresh_token grants the right to
+                // spend it. The token endpoint checks this list on every call, so a client that
+                // refreshes has to name both.
+                AllowedGrantTypes = [GrantTypes.AuthorizationCode, GrantTypes.RefreshToken],
+                OfflineAccessAllowed = true,
+
+                RedirectUris = [new Uri(configuration.GetRequiredValue("MauiCallback"), UriKind.Absolute)],
+                PostLogoutRedirectUris =
+                    [new Uri($"{configuration["MauiCallback"]}/Account/Redirecting", UriKind.Absolute)],
+
+                AllowedScopes =
+                [
+                    Scopes.OpenId,
+                    Scopes.Profile,
+                    Scopes.OfflineAccess,
+                    "orders",
+                    "basket",
+                    "webhooks",
+                ],
+
+                ForceUserClaimsInIdentityToken = true,
+                AccessTokenExpiresIn = TimeSpan.FromHours(2),
+                IdentityTokenExpiresIn = TimeSpan.FromHours(2),
+            },
+
+            new ClientInfo("webapp")
             {
-                new ApiScope("orders", "Orders Service"),
-                new ApiScope("basket", "Basket Service"),
-                new ApiScope("webhooks", "Webhooks registration Service"),
-            };
-        }
+                ClientName = "WebApp Client",
+                ClientUri = new Uri(configuration.GetRequiredValue("WebAppClient"), UriKind.Absolute),
+                ClientSecrets = [Secret("secret")],
 
-        // Identity resources are data like user ID, name, or email address of a user
-        // see: http://docs.identityserver.io/en/release/configuration/resources.html
-        public static IEnumerable<IdentityResource> GetResources()
-        {
-            return new List<IdentityResource>
+                // AddOpenIdConnect puts client_id and client_secret in the token request body,
+                // which is client_secret_post rather than the client_secret_basic default.
+                TokenEndpointAuthMethod = ClientAuthenticationMethods.ClientSecretPost,
+
+                AllowedGrantTypes = [GrantTypes.AuthorizationCode, GrantTypes.RefreshToken],
+                OfflineAccessAllowed = true,
+
+                RedirectUris =
+                    [new Uri($"{configuration["WebAppClient"]}/signin-oidc", UriKind.Absolute)],
+                PostLogoutRedirectUris =
+                    [new Uri($"{configuration["WebAppClient"]}/signout-callback-oidc", UriKind.Absolute)],
+
+                AllowedScopes =
+                [
+                    Scopes.OpenId,
+                    Scopes.Profile,
+                    Scopes.OfflineAccess,
+                    "orders",
+                    "basket",
+                    "webhooks",
+                ],
+
+                ForceUserClaimsInIdentityToken = true,
+                AccessTokenExpiresIn = TimeSpan.FromHours(2),
+                IdentityTokenExpiresIn = TimeSpan.FromHours(2),
+            },
+
+            new ClientInfo("webhooksclient")
             {
-                new IdentityResources.OpenId(),
-                new IdentityResources.Profile()
-            };
-        }
+                ClientName = "Webhooks Client",
+                ClientUri = new Uri(configuration.GetRequiredValue("WebhooksWebClient"), UriKind.Absolute),
+                ClientSecrets = [Secret("secret")],
+                TokenEndpointAuthMethod = ClientAuthenticationMethods.ClientSecretPost,
 
-        // client want to access resources (aka scopes)
-        public static IEnumerable<Client> GetClients(IConfiguration configuration)
-        {
-            return new List<Client>
-            {
-                new Client
-                {
-                    ClientId = "maui",
-                    ClientName = "eShop MAUI OpenId Client",
-                    AllowedGrantTypes = GrantTypes.Code,                    
-                    //Used to retrieve the access token on the back channel.
-                    ClientSecrets =
-                    {
-                        new Secret("secret".Sha256())
-                    },
-                    RedirectUris = { configuration["MauiCallback"] },
-                    RequireConsent = false,
-                    RequirePkce = true,
-                    PostLogoutRedirectUris = { $"{configuration["MauiCallback"]}/Account/Redirecting" },
-                    //AllowedCorsOrigins = { "http://eshopxamarin" },
-                    AllowedScopes = new List<string>
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        "orders",
-                        "basket",
-                        "mobileshoppingagg",
-                        "webhooks"
-                    },
-                    //Allow requesting refresh tokens for long lived API access
-                    AllowOfflineAccess = true,
-                    AllowAccessTokensViaBrowser = true,
-                    AlwaysIncludeUserClaimsInIdToken = true,
-                    AccessTokenLifetime = 60*60*2, // 2 hours
-                    IdentityTokenLifetime= 60*60*2 // 2 hours
-                },
-                new Client
-                {
-                    ClientId = "webapp",
-                    ClientName = "WebApp Client",
-                    ClientSecrets = new List<Secret>
-                    {
-                        new Secret("secret".Sha256())
-                    },
-                    ClientUri = $"{configuration["WebAppClient"]}",                             // public uri of the client
-                    AllowedGrantTypes = GrantTypes.Code,
-                    AllowAccessTokensViaBrowser = false,
-                    RequireConsent = false,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = true,
-                    RequirePkce = false,
-                    RedirectUris = new List<string>
-                    {
-                        $"{configuration["WebAppClient"]}/signin-oidc"
-                    },
-                    PostLogoutRedirectUris = new List<string>
-                    {
-                        $"{configuration["WebAppClient"]}/signout-callback-oidc"
-                    },
-                    AllowedScopes = new List<string>
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        "orders",
-                        "basket",
-                        "webshoppingagg",
-                        "webhooks"
-                    },
-                    AccessTokenLifetime = 60*60*2, // 2 hours
-                    IdentityTokenLifetime= 60*60*2 // 2 hours
-                },
-                new Client
-                {
-                    ClientId = "webhooksclient",
-                    ClientName = "Webhooks Client",
-                    ClientSecrets = new List<Secret>
-                    {
-                        new Secret("secret".Sha256())
-                    },
-                    ClientUri = $"{configuration["WebhooksWebClient"]}",                             // public uri of the client
-                    AllowedGrantTypes = GrantTypes.Code,
-                    AllowAccessTokensViaBrowser = false,
-                    RequireConsent = false,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = true,
-                    RedirectUris = new List<string>
-                    {
-                        $"{configuration["WebhooksWebClient"]}/signin-oidc"
-                    },
-                    PostLogoutRedirectUris = new List<string>
-                    {
-                        $"{configuration["WebhooksWebClient"]}/signout-callback-oidc"
-                    },
-                    AllowedScopes = new List<string>
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        "webhooks"
-                    },
-                    AccessTokenLifetime = 60*60*2, // 2 hours
-                    IdentityTokenLifetime= 60*60*2 // 2 hours
-                },
-                new Client
-                {
-                    ClientId = "basketswaggerui",
-                    ClientName = "Basket Swagger UI",
-                    AllowedGrantTypes = GrantTypes.Implicit,
-                    AllowAccessTokensViaBrowser = true,
+                AllowedGrantTypes = [GrantTypes.AuthorizationCode, GrantTypes.RefreshToken],
+                OfflineAccessAllowed = true,
 
-                    RedirectUris = { $"{configuration["BasketApiClient"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{configuration["BasketApiClient"]}/swagger/" },
+                RedirectUris =
+                    [new Uri($"{configuration["WebhooksWebClient"]}/signin-oidc", UriKind.Absolute)],
+                PostLogoutRedirectUris =
+                    [new Uri($"{configuration["WebhooksWebClient"]}/signout-callback-oidc", UriKind.Absolute)],
 
-                    AllowedScopes =
-                    {
-                        "basket"
-                    }
-                },
-                new Client
-                {
-                    ClientId = "orderingswaggerui",
-                    ClientName = "Ordering Swagger UI",
-                    AllowedGrantTypes = GrantTypes.Implicit,
-                    AllowAccessTokensViaBrowser = true,
+                AllowedScopes = [Scopes.OpenId, Scopes.Profile, Scopes.OfflineAccess, "webhooks"],
 
-                    RedirectUris = { $"{configuration["OrderingApiClient"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{configuration["OrderingApiClient"]}/swagger/" },
+                ForceUserClaimsInIdentityToken = true,
+                AccessTokenExpiresIn = TimeSpan.FromHours(2),
+                IdentityTokenExpiresIn = TimeSpan.FromHours(2),
+            },
+        ];
 
-                    AllowedScopes =
-                    {
-                        "orders"
-                    }
-                },
-                new Client
-                {
-                    ClientId = "webhooksswaggerui",
-                    ClientName = "WebHooks Service Swagger UI",
-                    AllowedGrantTypes = GrantTypes.Implicit,
-                    AllowAccessTokensViaBrowser = true,
-
-                    RedirectUris = { $"{configuration["WebhooksApiClient"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{configuration["WebhooksApiClient"]}/swagger/" },
-
-                    AllowedScopes =
-                    {
-                        "webhooks"
-                    }
-                }
-            };
-        }
+        private static ClientSecret Secret(string value)
+            => new() { Sha256Hash = SHA256.HashData(Encoding.UTF8.GetBytes(value)) };
     }
 }
