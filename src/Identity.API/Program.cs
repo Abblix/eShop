@@ -35,11 +35,16 @@ builder.Services.Configure<PasswordHasherOptions>(builder.Configuration.GetSecti
 builder.Services.AddAuthentication()
         .AddCookie(options => options.ExpireTimeSpan = TimeSpan.FromHours(2));
 
+// Clients and scopes are configuration, not code: the whole registry lives in the Oidc section of
+// appsettings, so a deployment can add a client or change a redirect path without a rebuild.
+var oidcConfiguration = builder.Configuration.GetSection("Oidc").Get<OidcConfiguration>()
+    ?? throw new InvalidOperationException("The Oidc configuration section is missing.");
+
 builder.Services.AddOidcServices(options =>
 {
     options.LoginUri = new Uri("/Account/Login", UriKind.Relative);
-    options.Scopes = Config.GetScopes();
-    options.Clients = Config.GetClients(builder.Configuration);
+    options.Scopes = oidcConfiguration.ToScopeDefinitions();
+    options.Clients = oidcConfiguration.ToClientInfos();
 });
 
 // Signing keys come from the identity database rather than from the options above, so a restart

@@ -2,8 +2,6 @@
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddForwardedHeaders();
-
 var redis = builder.AddRedis("redis");
 var rabbitMq = builder.AddRabbitMQ("eventbus")
     .WithLifetime(ContainerLifetime.Persistent);
