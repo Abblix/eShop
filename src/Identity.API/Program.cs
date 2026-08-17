@@ -65,6 +65,12 @@ app.UseStaticFiles();
 // This cookie policy fixes login issues with Chrome 80+ using HTTP
 app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 app.UseRouting();
+
+// The protocol endpoints carry CORS metadata, because a browser-based client reads the discovery
+// document and the JWKS cross-origin. Without this call every one of them answers 500: routing
+// finds the metadata and no middleware honours it. The policy itself is registered by the library.
+app.UseCors();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
