@@ -1,5 +1,3 @@
-using Abblix.Oidc.Server.Common.Configuration;
-
 namespace eShop.Identity.API.Configuration
 {
     /// <summary>
@@ -74,8 +72,6 @@ namespace eShop.Identity.API.Configuration
 
         public string[] AllowedGrantTypes { get; set; } = [];
 
-        public bool OfflineAccessAllowed { get; set; }
-
         /// <summary>Paths under <see cref="BaseAddress"/> the server may return the user to.</summary>
         public string[] RedirectPaths { get; set; } = [];
 
@@ -90,8 +86,6 @@ namespace eShop.Identity.API.Configuration
 
         public TimeSpan IdentityTokenExpiresIn { get; set; }
 
-        public RefreshTokenConfiguration RefreshToken { get; set; } = new();
-
         public ClientInfo ToClientInfo(string clientId)
         {
             var baseAddress = new Uri(BaseAddress, UriKind.Absolute);
@@ -103,35 +97,13 @@ namespace eShop.Identity.API.Configuration
                 ClientSecrets = [new ClientSecret { Sha256Hash = Convert.FromBase64String(SecretSha256) }],
                 TokenEndpointAuthMethod = TokenEndpointAuthMethod,
                 AllowedGrantTypes = AllowedGrantTypes,
-                OfflineAccessAllowed = OfflineAccessAllowed,
                 RedirectUris = [.. RedirectPaths.Select(path => new Uri(baseAddress, path))],
                 PostLogoutRedirectUris = [.. PostLogoutRedirectPaths.Select(path => new Uri(baseAddress, path))],
                 AllowedScopes = AllowedScopes,
                 ForceUserClaimsInIdentityToken = ForceUserClaimsInIdentityToken,
                 AccessTokenExpiresIn = AccessTokenExpiresIn,
                 IdentityTokenExpiresIn = IdentityTokenExpiresIn,
-                RefreshToken = new RefreshTokenOptions
-                {
-                    AbsoluteExpiresIn = RefreshToken.AbsoluteExpiresIn,
-                    SlidingExpiresIn = RefreshToken.SlidingExpiresIn,
-                },
             };
         }
-    }
-
-    /// <summary>
-    /// How long a refresh token remains usable.
-    /// </summary>
-    /// <remarks>
-    /// Both values are durations rather than counts of days or minutes, so the unit is part of the
-    /// value and cannot be misread. The absolute limit is a ceiling the token never outlives; the
-    /// sliding limit ends a session that has simply gone quiet, which is what stops a long-lived
-    /// grant from surviving indefinitely on a device nobody uses any more.
-    /// </remarks>
-    public class RefreshTokenConfiguration
-    {
-        public TimeSpan AbsoluteExpiresIn { get; set; } = TimeSpan.FromHours(8);
-
-        public TimeSpan? SlidingExpiresIn { get; set; } = TimeSpan.FromHours(1);
     }
 }
