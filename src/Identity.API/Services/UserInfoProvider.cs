@@ -33,10 +33,6 @@ namespace eShop.Identity.API.Services
                     IanaClaimTypes.PhoneNumberVerified => user.PhoneNumber is not null && user.PhoneNumberConfirmed,
 
                     "last_name" => user.LastName,
-                    "card_number" => user.CardNumber,
-                    "card_holder" => user.CardHolderName,
-                    "card_security_number" => user.SecurityNumber,
-                    "card_expiration" => user.Expiration,
                     "address_city" => user.City,
                     "address_country" => user.Country,
                     "address_state" => user.State,
