@@ -82,6 +82,8 @@ namespace eShop.Identity.API.Configuration
 
         public bool ForceUserClaimsInIdentityToken { get; set; }
 
+        public TimeSpan AuthorizationCodeExpiresIn { get; set; }
+
         public TimeSpan AccessTokenExpiresIn { get; set; }
 
         public TimeSpan IdentityTokenExpiresIn { get; set; }
@@ -101,6 +103,7 @@ namespace eShop.Identity.API.Configuration
                 PostLogoutRedirectUris = [.. PostLogoutRedirectPaths.Select(path => new Uri(baseAddress, path))],
                 AllowedScopes = AllowedScopes,
                 ForceUserClaimsInIdentityToken = ForceUserClaimsInIdentityToken,
+                AuthorizationCodeExpiresIn = AuthorizationCodeExpiresIn,
                 AccessTokenExpiresIn = AccessTokenExpiresIn,
                 IdentityTokenExpiresIn = IdentityTokenExpiresIn,
             };

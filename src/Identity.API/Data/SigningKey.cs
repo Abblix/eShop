@@ -7,8 +7,8 @@ namespace eShop.Identity.API.Data;
 /// The library has no key store and no key generation of its own: a signing key is configuration
 /// the host supplies, which is why this table exists. Storing the private key in the application
 /// database matches the posture of a developer signing credential and is not a production answer;
-/// a real deployment keeps the key in a KMS or HSM and reads it through the Vault or Azure key
-/// packages instead of this table.
+/// a real deployment keeps the key in a KMS or HSM behind its own IAuthServiceKeysProvider
+/// instead of this table.
 /// </remarks>
 public class SigningKey
 {
