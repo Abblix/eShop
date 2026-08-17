@@ -1,5 +1,16 @@
 # eShop Reference Application - "AdventureWorks"
 
+> **Unofficial fork.** This is a fork of [dotnet/eShop](https://github.com/dotnet/eShop) maintained by
+> Abblix LLP. Its identity provider has been migrated from Duende IdentityServer to
+> [Abblix OIDC Server](https://github.com/Abblix/Oidc.Server); everything else is upstream.
+> It is not affiliated with, endorsed by, or supported by Microsoft or the .NET Foundation, and the
+> names and logos of both remain their respective owners'. The upstream code stays under its
+> original MIT licence, reproduced unchanged in [LICENSE](LICENSE). Abblix OIDC Server itself is a
+> separate product under its own licence and is consumed here as a NuGet package.
+>
+> The migration is written up step by step at
+> [docs.abblix.com](https://docs.abblix.com/docs/migrate-from-identityserver).
+
 A reference .NET application implementing an e-commerce website using a services-based architecture using [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/).
 
 ![eShop Reference Application architecture diagram](img/eshop_architecture.png)
