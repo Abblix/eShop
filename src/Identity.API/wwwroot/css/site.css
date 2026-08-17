@@ -127,11 +127,17 @@
 body {
     margin-top: 0;
     font-family: 'Plus Jakarta Sans';
-    min-width:480px;
+    min-width: 480px;
+    /* Pin the footer to the bottom on tall windows: the page is short, and a footer floating
+       mid-viewport over dead white space reads as broken layout. */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .content {
     position: relative;
+    flex: 1;
 }
 
 .welcome-page {
@@ -149,7 +155,8 @@ body {
 .eshop-banner img {
     position: absolute;
     width: 100%;
-    max-width: 1920px;
+    /* No width cap: on screens wider than the photo a capped hero floats as a centered band
+       with white gutters beside a full-width footer, which reads as a broken grid. */
 }
 
 .eshop-header {
