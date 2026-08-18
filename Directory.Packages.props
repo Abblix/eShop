@@ -7,7 +7,7 @@
     <AspireVersion>13.2.0</AspireVersion>
     <AspireUnstablePackagesVersion>13.2.0-preview.1.26170.3</AspireUnstablePackagesVersion>
     <GrpcVersion>2.76.0</GrpcVersion>
-    <AbblixOidcVersion>2.4.0-dev.0.381</AbblixOidcVersion>
+    <AbblixOidcVersion>2.4.0-dev.0.383</AbblixOidcVersion>
     <ApiVersioningVersion>10.0.0-preview.2</ApiVersioningVersion>
   </PropertyGroup>
   <ItemGroup>
