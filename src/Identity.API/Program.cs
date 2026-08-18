@@ -1,5 +1,6 @@
 using Abblix.Oidc.Server.AspNetCore;
 using Abblix.Oidc.Server.Common.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +35,14 @@ builder.Services.Configure<PasswordHasherOptions>(builder.Configuration.GetSecti
 
 // The cookie the server writes at sign-in and reads back on every authorization request.
 builder.Services.AddAuthentication()
-        .AddCookie(options => options.ExpireTimeSpan = TimeSpan.FromHours(2));
+        .AddCookie(options => options.Events.OnValidatePrincipal = SessionValidation.RejectUsersNoLongerAllowedIn);
+
+// How long that session lives is a deployment decision rather than a property of the code, so it is
+// bound from configuration. The validation above is not: it is behaviour, and a deployment that could
+// switch it off would be a deployment that can silently keep locked-out users signed in.
+builder.Services.Configure<CookieAuthenticationOptions>(
+    CookieAuthenticationDefaults.AuthenticationScheme,
+    builder.Configuration.GetSection("Session"));
 
 // Clients and scopes are configuration, not code: the whole registry lives in the Oidc section of
 // appsettings, so a deployment can add a client or change a redirect path without a rebuild.
