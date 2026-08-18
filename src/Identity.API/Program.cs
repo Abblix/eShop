@@ -1,3 +1,4 @@
+using Abblix.Oidc.Server.AspNetCore;
 using Abblix.Oidc.Server.Common.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +47,12 @@ builder.Services.AddOidcServices(options =>
     options.Scopes = oidcConfiguration.Scopes;
     options.Clients = oidcConfiguration.ToClientInfos();
 });
+
+// The library registers the CORS policy the protocol endpoints name, and an empty origin list
+// means any origin may read them. eShop has no browser-based client, so the complete list of
+// origins that could ever need them is the addresses its own clients answer on.
+builder.Services.Configure<OidcCorsOptions>(
+    options => Array.ForEach(oidcConfiguration.ClientOrigins(), options.AllowedOrigins.Add));
 
 // Signing keys come from the identity database rather than from the options above, so a restart
 // does not invalidate tokens that are still within their lifetime.

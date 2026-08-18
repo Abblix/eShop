@@ -28,6 +28,14 @@ namespace eShop.Identity.API.Configuration
 
         public ClientInfo[] ToClientInfos()
             => [.. Clients.Select(entry => entry.Value.ToClientInfo(entry.Key))];
+
+        /// <summary>
+        /// The origins the registered clients answer on, in the form a CORS policy compares against.
+        /// </summary>
+        public string[] ClientOrigins()
+            => [.. Clients.Values
+                .Select(client => new Uri(client.BaseAddress, UriKind.Absolute).GetLeftPart(UriPartial.Authority))
+                .Distinct(StringComparer.Ordinal)];
     }
 
     public class ClientConfiguration
