@@ -53,9 +53,9 @@ updates:
       Pgvector:
         patterns:
           - "Pgvector.*"
-      Duende:
+      Abblix:
         patterns:
-          - "Duende.*"
+          - "Abblix.*"
       MSTest:
         patterns:
           - "MSTest.*"

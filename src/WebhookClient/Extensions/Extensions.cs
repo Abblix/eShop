@@ -56,7 +56,13 @@ public static class Extensions
             options.SaveTokens = true;
             options.GetClaimsFromUserInfoEndpoint = true;
             options.RequireHttpsMetadata = false;
+            // The handler seeds this list with openid and profile, and the calls below would extend
+            // it rather than replace it - so what the client asks for would only partly be written
+            // here. Clearing first makes the request exactly what this list says; profile stays
+            // because the user menu displays the name that scope carries.
+            options.Scope.Clear();
             options.Scope.Add("openid");
+            options.Scope.Add("profile");
             options.Scope.Add("webhooks");
         });
 

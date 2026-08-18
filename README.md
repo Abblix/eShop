@@ -1,4 +1,24 @@
-# eShop Reference Application - "AdventureWorks"
+# eShop on Abblix OIDC Server: a worked IdentityServer migration for .NET 10
+
+Microsoft's [eShop](https://github.com/dotnet/eShop) reference application with its OpenID Connect
+provider migrated from Duende IdentityServer to
+[Abblix OIDC Server](https://github.com/Abblix/Oidc.Server). Everything else is upstream: the same
+.NET Aspire orchestration, the same Blazor storefront, the same microservices, the same APIs.
+
+Clone it to see what moving an ASP.NET Core identity provider off IdentityServer actually touches:
+client and scope registration, the login and logout screens, claim mapping, signing keys and token
+persistence. On the consuming side it touches almost nothing. No resource server was modified and
+no authority URL changed; the two client applications gained four statements between them, so that
+each names in full the scopes it requests. Every step is explained, with the alternatives that were
+rejected and why, in the
+[step-by-step migration guide](https://docs.abblix.com/docs/migrate-from-identityserver).
+
+> **Unofficial fork.** Maintained by Abblix LLP. Not affiliated with, endorsed by, or supported by
+> Microsoft or the .NET Foundation; their names and logos remain their respective owners'. The
+> upstream code stays under its original MIT licence, reproduced unchanged in [LICENSE](LICENSE).
+> Abblix OIDC Server is a separate product under its own licence, consumed here as a NuGet package.
+
+## What eShop is
 
 A reference .NET application implementing an e-commerce website using a services-based architecture using [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/).
 
@@ -8,14 +28,13 @@ A reference .NET application implementing an e-commerce website using a services
 
 ## Getting Started
 
-This version of eShop is based on .NET 9. 
+This version of eShop is based on .NET 10.
 
-Previous eShop versions:
-* [.NET 8](https://github.com/dotnet/eShop/tree/release/8.0)
+Upstream, including its earlier releases: [dotnet/eShop](https://github.com/dotnet/eShop).
 
 ### Prerequisites
 
-- Clone the eShop repository: https://github.com/dotnet/eshop
+- Clone this repository: https://github.com/Abblix/eShop
 - [Install & start Docker Desktop](https://docs.docker.com/engine/install/)
 
 #### Windows with Visual Studio

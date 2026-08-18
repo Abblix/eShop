@@ -2,12 +2,12 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <DotnetPackagesVersion>10.0.5</DotnetPackagesVersion>
-    <MicrosoftExtensionsVersion>10.4.0</MicrosoftExtensionsVersion>
+    <DotnetPackagesVersion>10.0.11</DotnetPackagesVersion>
+    <MicrosoftExtensionsVersion>10.9.0</MicrosoftExtensionsVersion>
     <AspireVersion>13.2.0</AspireVersion>
     <AspireUnstablePackagesVersion>13.2.0-preview.1.26170.3</AspireUnstablePackagesVersion>
     <GrpcVersion>2.76.0</GrpcVersion>
-    <DuendeVersion>7.3.1</DuendeVersion>
+    <AbblixOidcVersion>2.4.0-dev.0.388</AbblixOidcVersion>
     <ApiVersioningVersion>10.0.0-preview.2</ApiVersioningVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -39,10 +39,10 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="$(DotnetPackagesVersion)" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="2.7.0" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageVersion Include="MSTest" Version="4.0.2" />
     <!-- Version together with EF -->
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
@@ -69,12 +69,8 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.15.0-beta.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
-    <!-- IdentityServer -->
-    <PackageVersion Include="Duende.IdentityServer" Version="7.3.2" />
-    <PackageVersion Include="Duende.IdentityServer.AspNetIdentity" Version="7.3.2" />
-    <PackageVersion Include="Duende.IdentityServer.EntityFramework" Version="7.3.2" />
-    <PackageVersion Include="Duende.IdentityServer.EntityFramework.Storage" Version="7.3.2" />
-    <PackageVersion Include="Duende.IdentityServer.Storage" Version="7.3.2" />
+    <!-- OpenID Provider -->
+    <PackageVersion Include="Abblix.Oidc.Server.Mvc" Version="$(AbblixOidcVersion)" />
     <!-- Scaffolding -->
     <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0-rc.1.23461.3" />
     <!-- Grpc -->
@@ -85,7 +81,7 @@
     <PackageVersion Include="Dapper" Version="2.1.35" />
     <PackageVersion Include="FluentValidation" Version="12.0.0" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
-    <PackageVersion Include="Google.Protobuf" Version="3.33.5" />
+    <PackageVersion Include="Google.Protobuf" Version="3.35.0" />
     <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
     <PackageVersion Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.1" />

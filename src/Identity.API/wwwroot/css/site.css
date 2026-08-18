@@ -127,11 +127,17 @@
 body {
     margin-top: 0;
     font-family: 'Plus Jakarta Sans';
-    min-width:480px;
+    min-width: 480px;
+    /* Pin the footer to the bottom on tall windows: the page is short, and a footer floating
+       mid-viewport over dead white space reads as broken layout. */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .content {
     position: relative;
+    flex: 1;
 }
 
 .welcome-page {
@@ -148,8 +154,16 @@ body {
 
 .eshop-banner img {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 1920px;
+    /* The photo backs the whole viewport, not just its own aspect-ratio band: sized by its
+       intrinsic proportions it ends mid-page on a tall window, leaving a bare white strip
+       between its bottom edge and the footer. Cover crops instead of stretching, and no
+       width cap - a capped hero floats as a centered band with white gutters beside a
+       full-width footer, which reads as a broken grid. */
+    height: 100vh;
+    object-fit: cover;
 }
 
 .eshop-header {
@@ -223,6 +237,9 @@ body {
     margin-top: 3.5rem;
     background-color: #000;
     width: 100%;
+    /* The full-height hero photo is absolutely positioned and paints over the backgrounds of
+       non-positioned siblings; without its own layer the footer is covered whole. */
+    position: relative;
 }
 
 .eshop-footer-content {
