@@ -76,17 +76,25 @@ namespace eShop.Identity.API.Configuration
 
         public bool ForceUserClaimsInIdentityToken { get; set; }
 
-        public TimeSpan AuthorizationCodeExpiresIn { get; set; }
+        /// <summary>How long an authorization code stays usable. Absent means the library's default.</summary>
+        /// <remarks>
+        /// Nullable on purpose. A bare <see cref="TimeSpan"/> that the file omits binds to zero, and zero
+        /// is a value the library honours, so a client added by a settings edit with one line missing
+        /// would issue tokens that have already expired.
+        /// </remarks>
+        public TimeSpan? AuthorizationCodeExpiresIn { get; set; }
 
-        public TimeSpan AccessTokenExpiresIn { get; set; }
+        /// <inheritdoc cref="AuthorizationCodeExpiresIn"/>
+        public TimeSpan? AccessTokenExpiresIn { get; set; }
 
-        public TimeSpan IdentityTokenExpiresIn { get; set; }
+        /// <inheritdoc cref="AuthorizationCodeExpiresIn"/>
+        public TimeSpan? IdentityTokenExpiresIn { get; set; }
 
         public ClientInfo ToClientInfo(string clientId)
         {
             var baseAddress = new Uri(BaseAddress, UriKind.Absolute);
 
-            return new ClientInfo(clientId)
+            var clientInfo = new ClientInfo(clientId)
             {
                 ClientName = ClientName,
                 ClientUri = baseAddress,
@@ -97,10 +105,18 @@ namespace eShop.Identity.API.Configuration
                 PostLogoutRedirectUris = [.. PostLogoutRedirectPaths.Select(path => new Uri(baseAddress, path))],
                 AllowedScopes = AllowedScopes,
                 ForceUserClaimsInIdentityToken = ForceUserClaimsInIdentityToken,
-                AuthorizationCodeExpiresIn = AuthorizationCodeExpiresIn,
-                AccessTokenExpiresIn = AccessTokenExpiresIn,
-                IdentityTokenExpiresIn = IdentityTokenExpiresIn,
             };
+
+            if (AuthorizationCodeExpiresIn is { } authorizationCodeExpiresIn)
+                clientInfo.AuthorizationCodeExpiresIn = authorizationCodeExpiresIn;
+
+            if (AccessTokenExpiresIn is { } accessTokenExpiresIn)
+                clientInfo.AccessTokenExpiresIn = accessTokenExpiresIn;
+
+            if (IdentityTokenExpiresIn is { } identityTokenExpiresIn)
+                clientInfo.IdentityTokenExpiresIn = identityTokenExpiresIn;
+
+            return clientInfo;
         }
     }
 }
