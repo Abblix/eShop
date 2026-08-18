@@ -43,7 +43,7 @@ var oidcConfiguration = builder.Configuration.GetSection("Oidc").Get<OidcConfigu
 builder.Services.AddOidcServices(options =>
 {
     options.LoginUri = new Uri("/Account/Login", UriKind.Relative);
-    options.Scopes = oidcConfiguration.ToScopeDefinitions();
+    options.Scopes = oidcConfiguration.Scopes;
     options.Clients = oidcConfiguration.ToClientInfos();
 });
 

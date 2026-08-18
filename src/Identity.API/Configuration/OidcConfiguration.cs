@@ -4,17 +4,17 @@ namespace eShop.Identity.API.Configuration
     /// The shape of the <c>Oidc</c> section of the application configuration.
     /// </summary>
     /// <remarks>
-    /// The library's own types are deliberately not bound directly. Two behaviours of the
-    /// configuration binder make that unsafe: a collection with a non-empty default is appended to
-    /// rather than replaced, so a client would silently keep a grant type the configuration does
-    /// not list; and a positional record whose collection parameter is absent is dropped from the
-    /// bound array entirely, so a scope carrying no claims would disappear without an error. These
-    /// plain types have no defaults to inherit and no constructor to satisfy, and the mapping below
-    /// states every value exactly once.
+    /// Scopes bind straight into the library's own type: it carries no defaults to inherit and a
+    /// parameterless constructor, so a scope that declares no claims - the ordinary shape of an API
+    /// scope - survives binding. Clients do not, and for two reasons. The configuration binder
+    /// appends to a collection that has a non-empty default rather than replacing it, so a client
+    /// bound directly would silently keep a grant type this file does not list. And a client is
+    /// described here by a base address plus paths under it, which is what keeps a deployment
+    /// override free of list indices.
     /// </remarks>
     public class OidcConfiguration
     {
-        public ScopeConfiguration[] Scopes { get; set; } = [];
+        public ScopeDefinition[] Scopes { get; set; } = [];
 
         /// <summary>
         /// The client registry, keyed by client identifier.
@@ -26,22 +26,8 @@ namespace eShop.Identity.API.Configuration
         /// </remarks>
         public Dictionary<string, ClientConfiguration> Clients { get; set; } = [];
 
-        public ScopeDefinition[] ToScopeDefinitions()
-            => [.. Scopes.Select(scope => new ScopeDefinition(scope.Scope, scope.ClaimTypes))];
-
         public ClientInfo[] ToClientInfos()
             => [.. Clients.Select(entry => entry.Value.ToClientInfo(entry.Key))];
-    }
-
-    public class ScopeConfiguration
-    {
-        public string Scope { get; set; }
-
-        /// <summary>
-        /// The claims this scope asks for. They are what the server later requests from the user
-        /// store, so a claim absent here never reaches a token however the store is implemented.
-        /// </summary>
-        public string[] ClaimTypes { get; set; } = [];
     }
 
     public class ClientConfiguration
