@@ -82,6 +82,9 @@ public static class Extensions
             options.RequireHttpsMetadata = false;
             options.Scope.Add("openid");
             options.Scope.Add("profile");
+            // The shipping address the checkout form prefills travels under the standard address
+            // scope, so the storefront has to ask for it by name.
+            options.Scope.Add("address");
             options.Scope.Add("orders");
             options.Scope.Add("basket");
         });
