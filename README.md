@@ -5,10 +5,12 @@ provider migrated from Duende IdentityServer to
 [Abblix OIDC Server](https://github.com/Abblix/Oidc.Server). Everything else is upstream: the same
 .NET Aspire orchestration, the same Blazor storefront, the same microservices, the same APIs.
 
-Clone it to see what moving an ASP.NET Core identity provider off IdentityServer actually touches -
+Clone it to see what moving an ASP.NET Core identity provider off IdentityServer actually touches:
 client and scope registration, the login and logout screens, claim mapping, signing keys and token
-persistence - and what it does not: not one client application was changed. Every step is explained,
-with the alternatives that were rejected and why, in the
+persistence. On the consuming side it touches almost nothing. No resource server was modified and
+no authority URL changed; the two client applications gained four statements between them, so that
+each names in full the scopes it requests. Every step is explained, with the alternatives that were
+rejected and why, in the
 [step-by-step migration guide](https://docs.abblix.com/docs/migrate-from-identityserver).
 
 > **Unofficial fork.** Maintained by Abblix LLP. Not affiliated with, endorsed by, or supported by
