@@ -80,10 +80,12 @@ public static class Extensions
             options.SaveTokens = true;
             options.GetClaimsFromUserInfoEndpoint = true;
             options.RequireHttpsMetadata = false;
+            // The handler seeds this list with openid and profile, and the calls below would extend
+            // it rather than replace it - so what the client asks for would only partly be written
+            // here. Clearing first makes the request exactly what this list says.
+            options.Scope.Clear();
             options.Scope.Add("openid");
             options.Scope.Add("profile");
-            // The shipping address the checkout form prefills travels under the standard address
-            // scope, so the storefront has to ask for it by name.
             options.Scope.Add("address");
             options.Scope.Add("orders");
             options.Scope.Add("basket");
