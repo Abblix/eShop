@@ -24,8 +24,7 @@ a plan you have to imagine.
 It is not an argument for leaving Duende IdentityServer. That is a mature product with a decade of
 production behind it, and a system running well on it has no reason here. What this fork offers is
 the other half of the decision, the one a data sheet cannot give: what the move actually touches,
-what stays untouched, and where a library that ships fewer batteries hands work back to you. Read
-it, run it, and keep whatever conclusion it leads to.
+and where a library that ships fewer batteries hands work back to you.
 
 If you do have your own reason to move, or you are simply looking at what else the ecosystem
 offers and would rather try one than read about it, this is the fork to clone. It runs on your
