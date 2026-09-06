@@ -27,6 +27,10 @@ the other half of the decision, the one a data sheet cannot give: what the move 
 what stays untouched, and where a library that ships fewer batteries hands work back to you. Read
 it, run it, and keep whatever conclusion it leads to.
 
+If you do have your own reason to move, or you are simply looking at what else the ecosystem
+offers and would rather try one than read about it, this is the fork to clone. It runs on your
+machine in a few minutes, and every decision behind it is written up in the guide.
+
 The reasoning behind each step, including the alternatives rejected and why, is in the
 [step-by-step migration guide](https://docs.abblix.com/docs/migrate-from-identityserver).
 
