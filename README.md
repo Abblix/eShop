@@ -17,9 +17,9 @@ rejected and why, in the
 
 Trying an identity library is normally expensive: you find out what it costs only after you have
 wired it into your own system, and by then you have paid for the answer. This fork moves that
-expense somewhere else. eShop is public, it runs IdentityServer upstream, and both versions build
-and run, so the whole comparison is a diff between two commits of the same application rather than
-a plan you have to imagine.
+expense somewhere else. eShop is public and familiar to most .NET developers, it runs
+IdentityServer upstream, and both versions build and run, so the whole comparison is a diff between
+two commits of an application you already know rather than a plan you have to imagine.
 
 It is not an argument for leaving Duende IdentityServer. That is a mature product with a decade of
 production behind it, and a system running well on it has no reason here. What this fork offers is
@@ -27,8 +27,8 @@ the other half of the decision, the one a data sheet cannot give: what the move 
 and where a library that ships fewer batteries hands work back to you.
 
 If you do have your own reason to move, or you are simply looking at what else the ecosystem
-offers and would rather try one than read about it, this is the fork to clone. It runs on your
-machine in a few minutes, and every decision behind it is written up in the guide.
+offers and would rather try one than read about it, this is the fork to clone and study. It runs
+on your machine in a few minutes, and every decision behind it is written up in the guide.
 
 The reasoning behind each step, including the alternatives rejected and why, is in the
 [step-by-step migration guide](https://docs.abblix.com/docs/migrate-from-identityserver).
@@ -170,7 +170,10 @@ Notes:
 
 ## Contributing
 
-For more information on contributing to this repo, read [the contribution documentation](./CONTRIBUTING.md) and [the Code of Conduct](CODE-OF-CONDUCT.md).
+This is a demonstration fork, and the two halves have different homes. Anything about eShop itself
+belongs upstream at [dotnet/eShop](https://github.com/dotnet/eShop): changes made here would not
+reach the people maintaining it. Anything about the migration or the Abblix provider under it is
+welcome as an issue in this repository.
 
 ### Sample data
 
