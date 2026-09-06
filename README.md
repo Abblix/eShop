@@ -13,6 +13,23 @@ each names in full the scopes it requests. Every step is explained, with the alt
 rejected and why, in the
 [step-by-step migration guide](https://docs.abblix.com/docs/migrate-from-identityserver).
 
+## Why this fork exists
+
+Trying an identity library is normally expensive: you find out what it costs only after you have
+wired it into your own system, and by then you have paid for the answer. This fork moves that
+expense somewhere else. eShop is public, it runs IdentityServer upstream, and both versions build
+and run, so the whole comparison is a diff between two commits of the same application rather than
+a plan you have to imagine.
+
+It is not an argument for leaving Duende IdentityServer. That is a mature product with a decade of
+production behind it, and a system running well on it has no reason here. What this fork offers is
+the other half of the decision, the one a data sheet cannot give: what the move actually touches,
+what stays untouched, and where a library that ships fewer batteries hands work back to you. Read
+it, run it, and keep whatever conclusion it leads to.
+
+The reasoning behind each step, including the alternatives rejected and why, is in the
+[step-by-step migration guide](https://docs.abblix.com/docs/migrate-from-identityserver).
+
 > **Unofficial fork.** Maintained by Abblix LLP. Not affiliated with, endorsed by, or supported by
 > Microsoft or the .NET Foundation; their names and logos remain their respective owners'. The
 > upstream code stays under its original MIT licence, reproduced unchanged in [LICENSE](LICENSE).
