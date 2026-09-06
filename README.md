@@ -91,9 +91,11 @@ Login to the dashboard at: http://localhost:19888/login?t=uniquelogincodeforyou
 > You may need to install ASP.NET Core HTTPS development certificates first, and then close all browser tabs. Learn more at https://aka.ms/aspnet/https-trust-dev-cert
 
 Sign in to the storefront as `alice` or `bob`, password `Pass123$`. Both are created on first run by
-[UsersSeed.cs](src/Identity.API/UsersSeed.cs), and the login screen is served by Abblix OIDC Server:
-that page, the token it issues and the claims the checkout form fills itself from are what this fork
-exists to show.
+[UsersSeed.cs](src/Identity.API/UsersSeed.cs). The login screen you land on is the application's own
+page, [Login.cshtml](src/Identity.API/Views/Account/Login.cshtml): Abblix OIDC Server answers the
+protocol endpoints and knows only where to send an unauthenticated user, which is the boundary this
+fork was built to show. What it issues afterwards is the token behind the claims the checkout form
+fills itself from.
 
 ### Azure Open AI
 
