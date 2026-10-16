@@ -18,6 +18,13 @@ namespace eShop.Identity.API.Services
     /// </remarks>
     public class LogoutConfirmationPage(IEndSessionResponseFormatter inner) : IEndSessionResponseFormatter
     {
+        /// <summary>
+        /// Marks a page shown again because the answer the user gave was no longer accepted, typically because
+        /// it took longer than the confirmation lasts. It belongs to this page, not to the protocol, so the page
+        /// does not send it back.
+        /// </summary>
+        public const string AskedAgain = "asked_again";
+
         public Task<IResult> FormatResponseAsync(
             EndSessionRequest request, Result<IEndSessionResponse, OidcError> response)
         {
@@ -31,6 +38,7 @@ namespace eShop.Identity.API.Services
         {
             KeyValuePair<string, string>[] parameters =
             [
+                new(AskedAgain, request.Confirmation != null ? bool.TrueString : null),
                 new(EndSessionRequest.Parameters.Confirmation, confirmation),
                 new(EndSessionRequest.Parameters.IdTokenHint, request.IdTokenHint),
                 new(EndSessionRequest.Parameters.LogoutHint, request.LogoutHint),

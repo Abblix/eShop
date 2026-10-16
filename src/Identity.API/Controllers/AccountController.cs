@@ -98,7 +98,13 @@ namespace eShop.Identity.API.Controllers
             return View(new LogoutViewModel
             {
                 EndSessionEndpoint = endSessionEndpoint,
-                Parameters = [.. Request.Query.Select(parameter => KeyValuePair.Create(parameter.Key, parameter.Value.ToString()))],
+                Parameters =
+                [
+                    .. Request.Query
+                        .Where(parameter => parameter.Key != LogoutConfirmationPage.AskedAgain)
+                        .Select(parameter => KeyValuePair.Create(parameter.Key, parameter.Value.ToString())),
+                ],
+                AskedAgain = Request.Query.ContainsKey(LogoutConfirmationPage.AskedAgain),
             });
         }
 
