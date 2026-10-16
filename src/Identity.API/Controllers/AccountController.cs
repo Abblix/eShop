@@ -1,5 +1,6 @@
 using Abblix.Oidc.Server.Features.RandomGenerators;
 using Abblix.Oidc.Server.Model;
+using IdentityServerHost.Quickstart.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Path = Abblix.Oidc.Server.Mvc.Path;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
@@ -15,6 +16,7 @@ namespace eShop.Identity.API.Controllers
     /// tell the library who signed in. It never decides the outcome of the authorization request
     /// and never inspects it, which is why nothing in this controller parses a return URL.
     /// </remarks>
+    [SecurityHeaders]
     [AllowAnonymous]
     public class AccountController(
         UserManager<ApplicationUser> userManager,
