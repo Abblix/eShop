@@ -1,4 +1,4 @@
-# eShop on Abblix OIDC Server: a worked IdentityServer migration for .NET 10
+# eShop on Abblix OIDC Server: a worked IdentityServer migration
 
 Microsoft's [eShop](https://github.com/dotnet/eShop) reference application with its OpenID Connect
 provider migrated from Duende IdentityServer to
@@ -45,13 +45,14 @@ A reference .NET application implementing an e-commerce website using a services
 
 ## Getting Started
 
-This version of eShop is based on .NET 10.
+This version of eShop is based on .NET 10. Its identity server, Identity.API, runs on .NET 11, the
+runtime Abblix OIDC Server 3.0 is built for.
 
 Upstream, including its earlier releases: [dotnet/eShop](https://github.com/dotnet/eShop).
 
 ### Prerequisites
 
-1. Install a [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) that satisfies [`global.json`](global.json).
+1. Install a [.NET 11 SDK](https://dotnet.microsoft.com/download/dotnet/11.0) that satisfies [`global.json`](global.json), and the [ASP.NET Core Runtime 10](https://dotnet.microsoft.com/download/dotnet/10.0) the other services run on.
 2. Install the [Aspire CLI](https://aspire.dev/get-started/install-cli/) and verify that it is available:
 
     ```console
@@ -64,6 +65,12 @@ Upstream, including its earlier releases: [dotnet/eShop](https://github.com/dotn
     ```console
     git clone https://github.com/Abblix/eShop.git
     cd eShop
+    ```
+
+5. Until Abblix OIDC Server 3.0 is published on nuget.org, its packages come from GitHub Packages, which needs a GitHub personal access token with the `read:packages` scope. Set it for the restore:
+
+    ```powershell
+    $env:NuGetPackageSourceCredentials_abblix = "Username=<GitHub user>;Password=<token>"
     ```
 
 No separate Aspire workload or Visual Studio component is required; the AppHost SDK and hosting integrations are referenced by the projects in this repository.
