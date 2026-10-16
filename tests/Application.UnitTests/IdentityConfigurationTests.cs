@@ -26,10 +26,10 @@ public class IdentityConfigurationTests
             .ToClientInfos()
             .ToDictionary(client => client.ClientId);
 
-        CollectionAssert.Contains(clients["webapp"].RedirectUris.ToList(), new Uri("https://webapp.test/signin-oidc"));
-        CollectionAssert.Contains(clients["webapp"].PostLogoutRedirectUris.ToList(), new Uri("https://webapp.test/signout-callback-oidc"));
-        CollectionAssert.Contains(clients["webapp"].AllowedScopes.ToList(), "basket");
-        CollectionAssert.Contains(clients["webapp"].AllowedScopes.ToList(), "orders");
-        CollectionAssert.Contains(clients["webhooksclient"].AllowedScopes.ToList(), "webhooks");
+        CollectionAssert.Contains(clients["webapp"].RedirectUris!.ToList(), new Uri("https://webapp.test/signin-oidc"));
+        CollectionAssert.Contains(clients["webapp"].PostLogoutRedirectUris!.ToList(), new Uri("https://webapp.test/signout-callback-oidc"));
+        CollectionAssert.Contains(clients["webapp"].AllowedScopes!.ToList(), "basket");
+        CollectionAssert.Contains(clients["webapp"].AllowedScopes!.ToList(), "orders");
+        CollectionAssert.Contains(clients["webhooksclient"].AllowedScopes!.ToList(), "webhooks");
     }
 }

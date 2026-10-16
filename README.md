@@ -30,9 +30,6 @@ If you do have your own reason to move, or you are simply looking at what else t
 offers and would rather try one than read about it, this is the fork to clone and study. It runs
 on your machine in a few minutes, and every decision behind it is written up in the guide.
 
-The reasoning behind each step, including the alternatives rejected and why, is in the
-[step-by-step migration guide](https://docs.abblix.com/docs/migrate-from-identityserver).
-
 > **Unofficial fork.** Maintained by Abblix LLP. Not affiliated with, endorsed by, or supported by
 > Microsoft or the .NET Foundation; their names and logos remain their respective owners'. The
 > upstream code stays under its original MIT licence, reproduced unchanged in [LICENSE](LICENSE).
