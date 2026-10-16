@@ -1,6 +1,10 @@
-﻿using eShop.AppHost;
+﻿using System.IO.Pipes;
+using eShop.AppHost;
 
 var builder = DistributedApplication.CreateBuilder(args);
+
+builder.AddForwardedHeaders();
+builder.AddAzureContainerAppEnvironment("aca");
 
 var redis = builder.AddRedis("redis");
 var rabbitMq = builder.AddRabbitMQ("eventbus")
@@ -18,38 +22,38 @@ var webhooksDb = postgres.AddDatabase("webhooksdb");
 var launchProfileName = ShouldUseHttpForEndpoints() ? "http" : "https";
 
 // Services
-var identityApi = builder.AddProject<Projects.Identity_API>("identity-api", launchProfileName)
+var identityApi = builder.AddDotnetProject("identity-api", "../Identity.API", o => o.LaunchProfileName = launchProfileName)
     .WithExternalHttpEndpoints()
     .WithReference(identityDb)
     .WithHttpHealthCheck("/health");
 
 var identityEndpoint = identityApi.GetEndpoint(launchProfileName);
-
-var basketApi = builder.AddProject<Projects.Basket_API>("basket-api")
+    
+var basketApi = builder.AddDotnetProject("basket-api", "../Basket.API")
     .WithReference(redis)
     .WithReference(rabbitMq).WaitFor(rabbitMq)
     .WithEnvironment("Identity__Url", identityEndpoint);
 redis.WithParentRelationship(basketApi);
 
-var catalogApi = builder.AddProject<Projects.Catalog_API>("catalog-api")
+var catalogApi = builder.AddDotnetProject("catalog-api", "../Catalog.API")
     .WithReference(rabbitMq).WaitFor(rabbitMq)
     .WithReference(catalogDb);
 
-var orderingApi = builder.AddProject<Projects.Ordering_API>("ordering-api")
+var orderingApi = builder.AddDotnetProject("ordering-api", "../Ordering.API")
     .WithReference(rabbitMq).WaitFor(rabbitMq)
     .WithReference(orderDb).WaitFor(orderDb)
     .WithHttpHealthCheck("/health")
     .WithEnvironment("Identity__Url", identityEndpoint);
 
-builder.AddProject<Projects.OrderProcessor>("order-processor")
+builder.AddDotnetProject("order-processor", "../OrderProcessor")
     .WithReference(rabbitMq).WaitFor(rabbitMq)
     .WithReference(orderDb)
     .WaitFor(orderingApi); // wait for the orderingApi to be ready because that contains the EF migrations
-
-builder.AddProject<Projects.PaymentProcessor>("payment-processor")
+    
+builder.AddDotnetProject("payment-processor", "../PaymentProcessor")
     .WithReference(rabbitMq).WaitFor(rabbitMq);
 
-var webHooksApi = builder.AddProject<Projects.Webhooks_API>("webhooks-api")
+var webHooksApi = builder.AddDotnetProject("webhooks-api", "../Webhooks.API")
     .WithReference(rabbitMq).WaitFor(rabbitMq)
     .WithReference(webhooksDb)
     .WithEnvironment("Identity__Url", identityEndpoint);
@@ -60,11 +64,11 @@ builder.AddYarp("mobile-bff")
     .ConfigureMobileBffRoutes(catalogApi, orderingApi, identityApi);
 
 // Apps
-var webhooksClient = builder.AddProject<Projects.WebhookClient>("webhooksclient", launchProfileName)
+var webhooksClient = builder.AddDotnetProject("webhooksclient", "../WebhookClient", o => o.LaunchProfileName = launchProfileName)
     .WithReference(webHooksApi)
     .WithEnvironment("IdentityUrl", identityEndpoint);
 
-var webApp = builder.AddProject<Projects.WebApp>("webapp", launchProfileName)
+var webApp = builder.AddDotnetProject("webapp", "../WebApp", o => o.LaunchProfileName = launchProfileName)
     .WithExternalHttpEndpoints()
     .WithUrls(c => c.Urls.ForEach(u => u.DisplayText = $"Online Store ({u.Endpoint?.EndpointName})"))
     .WithReference(basketApi)
@@ -74,11 +78,11 @@ var webApp = builder.AddProject<Projects.WebApp>("webapp", launchProfileName)
     .WaitFor(identityApi)
     .WithEnvironment("IdentityUrl", identityEndpoint);
 
-// set to true if you want to use OpenAI
-bool useOpenAI = false;
-if (useOpenAI)
+// Set UseFoundry=true to provision Microsoft Foundry for chat and embeddings.
+bool useFoundry = Extensions.IsFoundryEnabled(builder.Configuration);
+if (useFoundry)
 {
-    builder.AddOpenAI(catalogApi, webApp, OpenAITarget.OpenAI); // set to AzureOpenAI if you want to use Azure OpenAI
+    builder.AddFoundry(catalogApi, webApp);
 }
 
 bool useOllama = false;
