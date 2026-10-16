@@ -2,7 +2,6 @@ using Abblix.Oidc.Server.Common;
 using Abblix.Oidc.Server.Endpoints.EndSession.Interfaces;
 using Abblix.Oidc.Server.MinimalApi.Formatters.Interfaces;
 using Abblix.Utils;
-using Microsoft.AspNetCore.WebUtilities;
 using EndSessionRequest = Abblix.Oidc.Server.Model.EndSessionRequest;
 
 namespace eShop.Identity.API.Services
@@ -29,12 +28,20 @@ namespace eShop.Identity.API.Services
             EndSessionRequest request, Result<IEndSessionResponse, OidcError> response)
         {
             if (response.TryGetSuccess(out var success) && success is ConfirmationRequired confirmation)
-                return Task.FromResult(Results.Redirect(PageUrl(request, confirmation.Confirmation)));
+                return Task.FromResult(Results.RedirectToRoute("default", PageValues(request, confirmation.Confirmation)));
 
             return inner.FormatResponseAsync(request, response);
         }
 
-        private static string PageUrl(EndSessionRequest request, string confirmation)
+        /// <summary>
+        /// The page's controller and action, and the parameters it posts back as its query.
+        /// </summary>
+        /// <remarks>
+        /// Resolved through the conventional route MapDefaultControllerRoute registers, when the redirect is written,
+        /// so the address follows the controller's route and the application's base path; route values the
+        /// template does not use become the query string.
+        /// </remarks>
+        private static RouteValueDictionary PageValues(EndSessionRequest request, string confirmation)
         {
             KeyValuePair<string, string>[] parameters =
             [
@@ -45,9 +52,20 @@ namespace eShop.Identity.API.Services
                 new(EndSessionRequest.Parameters.ClientId, request.ClientId),
                 new(EndSessionRequest.Parameters.PostLogoutRedirectUri, request.PostLogoutRedirectUri?.OriginalString),
                 new(EndSessionRequest.Parameters.State, request.State),
+                new(EndSessionRequest.Parameters.UiLocales, request.UiLocales is { } locales
+                    ? string.Join(' ', locales.Select(locale => locale.Name))
+                    : null),
             ];
 
-            return QueryHelpers.AddQueryString("/Account/Logout", parameters.Where(parameter => parameter.Value != null));
+            var values = new RouteValueDictionary
+            {
+                ["controller"] = "Account",
+                ["action"] = nameof(Controllers.AccountController.Logout),
+            };
+            foreach (var (name, value) in parameters.Where(parameter => parameter.Value != null))
+                values[name] = value;
+
+            return values;
         }
     }
 }

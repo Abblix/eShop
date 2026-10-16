@@ -52,7 +52,7 @@ Upstream, including its earlier releases: [dotnet/eShop](https://github.com/dotn
 
 ### Prerequisites
 
-1. Install a [.NET 11 SDK](https://dotnet.microsoft.com/download/dotnet/11.0) that satisfies [`global.json`](global.json), and the [ASP.NET Core Runtime 10](https://dotnet.microsoft.com/download/dotnet/10.0) the other services run on.
+1. Install a [.NET 11 SDK](https://dotnet.microsoft.com/download/dotnet/11.0) that satisfies [`global.json`](global.json), and the [.NET Runtime 10 and ASP.NET Core Runtime 10](https://dotnet.microsoft.com/download/dotnet/10.0) the other services run on.
 2. Install the [Aspire CLI](https://aspire.dev/get-started/install-cli/) and verify that it is available:
 
     ```console
@@ -71,6 +71,10 @@ Upstream, including its earlier releases: [dotnet/eShop](https://github.com/dotn
 
     ```powershell
     $env:NuGetPackageSourceCredentials_abblix = "Username=<GitHub user>;Password=<token>"
+    ```
+
+    ```bash
+    export NuGetPackageSourceCredentials_abblix="Username=<GitHub user>;Password=<token>"
     ```
 
 No separate Aspire workload or Visual Studio component is required; the AppHost SDK and hosting integrations are referenced by the projects in this repository.

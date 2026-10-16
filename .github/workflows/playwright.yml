@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    # The SDK global.json selects builds the identity server for .NET 11; the other services run on .NET 10.
+    # The SDK that global.json selects builds the identity server for .NET 11; the other services run on .NET 10.
     - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
       with:
         global-json-file: global.json
