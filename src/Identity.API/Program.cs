@@ -1,5 +1,7 @@
+using Abblix.DependencyInjection;
 using Abblix.Oidc.Server.AspNetCore;
 using Abblix.Oidc.Server.Common.Interfaces;
+using Abblix.Oidc.Server.MinimalApi.Formatters.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +64,11 @@ builder.Services.AddOidcServices(options =>
     options.Clients = oidcConfiguration.ToClientInfos();
 });
 
+// A logout the user has to confirm is shown on this application's own page rather than answered with the
+// library's JSON body, which a browser following a client's sign-out would display as it is.
+builder.Services.AddHttpContextAccessor();
+builder.Services.Decorate<IEndSessionResponseFormatter, LogoutConfirmationPage>();
+
 // The library registers the CORS policy the protocol endpoints name, and an empty origin list
 // means any origin may read them. eShop has no browser-based client, so the complete list of
 // origins that could ever need them is the addresses its own clients answer on.
@@ -100,9 +107,10 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// The protocol endpoints are attribute-routed controllers supplied by the library, so they are
-// mapped the same way any other controller is.
-app.MapControllers();
+// The protocol endpoints are Minimal API route handlers supplied by the library, mapped at the paths
+// its options give them; an endpoint that is not enabled is not mapped at all. The default route below
+// serves this application's own sign-in screen, which stays an MVC controller with views.
+app.MapOidcEndpoints();
 app.MapDefaultControllerRoute();
 
 app.Run();
