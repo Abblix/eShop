@@ -1,8 +1,9 @@
 using Abblix.Oidc.Server.Features.RandomGenerators;
 using Abblix.Oidc.Server.Model;
+using Abblix.Oidc.Server.Common.Configuration;
+using Abblix.Oidc.Server.Common.Interfaces;
 using IdentityServerHost.Quickstart.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Path = Abblix.Oidc.Server.Mvc.Path;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using UriBuilder = Abblix.Utils.UriBuilder;
 
@@ -23,7 +24,7 @@ namespace eShop.Identity.API.Controllers
         SignInManager<ApplicationUser> signInManager,
         IAuthSessionService authSessionService,
         ISessionIdGenerator sessionIdGenerator,
-        IUriResolver uriResolver,
+        IOidcEndpointResolver endpointResolver,
         TimeProvider clock) : Controller
     {
         [HttpGet]
@@ -65,8 +66,14 @@ namespace eShop.Identity.API.Controllers
 
             await authSessionService.SignInAsync(authSession);
 
-            // Resume the interrupted authorization request by its reference.
-            var authorizeUrl = new UriBuilder(uriResolver.Content(Path.Authorize))
+            // Resume the interrupted authorization request by its reference. The library answers with the
+            // path it mapped the endpoint on, so a moved path or a prefix needs no change here; it answers
+            // nothing only for a disabled endpoint, and a server without its authorization endpoint has no
+            // request to resume.
+            var authorizationEndpoint = endpointResolver.Resolve(OidcEndpoints.Authorize)
+                ?? throw new InvalidOperationException("The authorization endpoint is not mapped.");
+
+            var authorizeUrl = new UriBuilder(authorizationEndpoint)
             {
                 Query = { [AuthorizationRequest.Parameters.RequestUri] = model.RequestUri },
             };

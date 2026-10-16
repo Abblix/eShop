@@ -100,9 +100,10 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// The protocol endpoints are attribute-routed controllers supplied by the library, so they are
-// mapped the same way any other controller is.
-app.MapControllers();
+// The protocol endpoints are controllers supplied by the library with no routes of their own: the
+// library maps them at the paths its options give them, and an endpoint that is not enabled is not
+// mapped at all. The default route below serves this application's own sign-in screen.
+app.MapOidcControllers();
 app.MapDefaultControllerRoute();
 
 app.Run();
