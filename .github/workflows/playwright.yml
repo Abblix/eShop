@@ -12,7 +12,7 @@ on:
     paths-ignore:
       - '**.md'
       - 'src/ClientApp/**'
-      - 'test/ClientApp.UnitTests/**'
+      - 'tests/ClientApp.UnitTests/**'
       - '.github/workflows/pr-validation-maui.yml'
 jobs:
   test:
@@ -23,23 +23,32 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
-        dotnet-quality: 'preview'
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
-    - name: Install .NET HTTPS Development Certificate
-      # if: matrix.os == 'ubuntu-latest'
-      run: |
-        dotnet dev-certs https --clean
-        dotnet dev-certs https --trust
     - name: Install Playwright Browsers
-      run: npx playwright install chromium
+      run: npx playwright install --with-deps chromium
+    # The identity provider serves its protocol endpoints over HTTPS only, so the services call
+    # each other over HTTPS with the development certificate and have to trust it.
+    # Exit code 4 means trusted for .NET through OpenSSL but not for browsers through NSS, which
+    # is enough: Playwright accepts the certificate on its own. OpenSSL finds the trust only
+    # through SSL_CERT_DIR.
+    - name: Trust the development certificate
+      run: |
+        set +e
+        dotnet dev-certs https --trust
+        rc=$?
+        set -e
+        case $rc in
+          0|4) ;;
+          *) exit "$rc" ;;
+        esac
+        echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npm run test:e2e
       env:
-        ESHOP_USE_HTTP_ENDPOINTS: 1
         USERNAME1: bob
         PASSWORD: Pass123$
     - uses: actions/upload-artifact@v4

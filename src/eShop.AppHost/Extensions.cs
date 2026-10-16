@@ -1,129 +1,62 @@
-﻿using Aspire.Hosting.Eventing;
+﻿using Aspire.Hosting.Dotnet;
+using Aspire.Hosting.Eventing;
+using Aspire.Hosting.Foundry;
 using Aspire.Hosting.Lifecycle;
 using Aspire.Hosting.Yarp;
 using Aspire.Hosting.Yarp.Transforms;
+using Microsoft.Extensions.Configuration;
 using Yarp.ReverseProxy.Configuration;
 
 namespace eShop.AppHost;
 
-internal enum OpenAITarget
-{
-    OpenAI,
-    AzureOpenAI,
-    AzureOpenAIExisting,
-    AzureOpenAIExistingWithKey
-}
-
 internal static class Extensions
 {
+    public static bool IsFoundryEnabled(IConfiguration configuration) =>
+        bool.TryParse(configuration["UseFoundry"], out var useFoundry) && useFoundry;
+
     /// <summary>
-    /// Configures eShop projects to use OpenAI for text embedding and chat.
+    /// Adds a hook to set the ASPNETCORE_FORWARDEDHEADERS_ENABLED environment variable to true for all projects in the application.
     /// </summary>
-    public static IDistributedApplicationBuilder AddOpenAI(this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> catalogApi,
-        IResourceBuilder<ProjectResource> webApp,
-        OpenAITarget openAITarget)
+    public static IDistributedApplicationBuilder AddForwardedHeaders(this IDistributedApplicationBuilder builder)
     {
-        const string openAIName = "openai";
+        builder.Services.TryAddEventingSubscriber<AddForwardHeadersSubscriber>();
+        return builder;
+    }
 
-        const string textEmbeddingName = "textEmbeddingModel";
-        const string textEmbeddingModelName = "text-embedding-3-small";
-
-        const string chatName = "chatModel";
-        const string chatModelName = "gpt-4.1-mini";
-
-        if (openAITarget != OpenAITarget.AzureOpenAI)
+    private class AddForwardHeadersSubscriber : IDistributedApplicationEventingSubscriber
+    {
+        public Task SubscribeAsync(IDistributedApplicationEventing eventing, DistributedApplicationExecutionContext executionContext, CancellationToken cancellationToken)
         {
-#pragma warning disable ASPIREINTERACTION001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            IResourceBuilder<ParameterResource>? endpoint = null;
-            if (openAITarget != OpenAITarget.OpenAI)
+            eventing.Subscribe<BeforeStartEvent>((@event, ct) =>
             {
-                endpoint = builder.AddParameter("OpenAIEndpointParameter")
-                    .WithDescription("The Azure OpenAI endpoint to use, e.g. https://<name>.openai.azure.com/")
-                    .WithCustomInput(p => new()
+                foreach (var p in @event.Model.Resources.OfType<DotnetProjectResource>())
+                {
+                    p.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
                     {
-                        Name = "OpenAIEndpointParameter",
-                        Label = "Azure OpenAI Endpoint",
-                        InputType = InputType.Text,
-                        Value = "https://<name>.openai.azure.com/",
-                    });
-            }
+                        context.EnvironmentVariables["ASPNETCORE_FORWARDEDHEADERS_ENABLED"] = "true";
+                    }));
+                }
 
-            IResourceBuilder<ParameterResource>? key = null;
-            if (openAITarget is OpenAITarget.OpenAI or OpenAITarget.AzureOpenAIExistingWithKey)
-            {
-                key = builder.AddParameter("OpenAIKeyParameter", secret: true)
-                    .WithDescription("The OpenAI API key to use.")
-                    .WithCustomInput(p => new()
-                    {
-                        Name = "OpenAIKeyParameter",
-                        Label = "API Key",
-                        InputType = InputType.SecretText
-                    });
-            }
+                return Task.CompletedTask;
+            });
 
-            var chatModel = builder.AddParameter("ChatModelParameter")
-                .WithDescription("The chat model to use.")
-                .WithCustomInput(p => new()
-                {
-                    Name = "ChatModelParameter",
-                    Label = "Chat Model",
-                    InputType = InputType.Text,
-                    Value = chatModelName,
-                });
-
-            var embeddingModel = builder.AddParameter("EmbeddingModelParameter")
-                .WithDescription("The embedding model to use.")
-                .WithCustomInput(p => new()
-                {
-                    Name = "EmbeddingModelParameter",
-                    Label = "Text Embedding Model",
-                    InputType = InputType.Text,
-                    Value = textEmbeddingModelName,
-                });
-#pragma warning restore ASPIREINTERACTION001
-
-            var openAIConnectionBuilder = new ReferenceExpressionBuilder();
-            if (endpoint is not null)
-            {
-                openAIConnectionBuilder.Append($"Endpoint={endpoint}");
-            }
-            if (key is not null)
-            {
-                openAIConnectionBuilder.Append($";Key={key}");
-            }
-            var openAIConnectionString = openAIConnectionBuilder.Build();
-
-            catalogApi.WithReference(builder.AddConnectionString(textEmbeddingName, cs =>
-            {
-                cs.Append($"{openAIConnectionString};Deployment={embeddingModel}");
-            }));
-            webApp.WithReference(builder.AddConnectionString(chatName, cs =>
-            {
-                cs.Append($"{openAIConnectionString};Deployment={chatModel}");
-            }));
+            return Task.CompletedTask;
         }
-        else
-        {
-            var openAI = builder.AddAzureOpenAI(openAIName);
+    }
 
-            var chat = openAI.AddDeployment(chatName, chatModelName, "2025-04-14")
-                .WithProperties(d =>
-                {
-                    d.DeploymentName = chatModelName;
-                    d.SkuName = "GlobalStandard";
-                    d.SkuCapacity = 50;
-                });
-            var textEmbedding = openAI.AddDeployment(textEmbeddingName, textEmbeddingModelName, "1")
-                .WithProperties(d =>
-                {
-                    d.DeploymentName = textEmbeddingModelName;
-                    d.SkuCapacity = 20; // 20k tokens per minute are needed to seed the initial embeddings
-                });
+    /// <summary>
+    /// Configures eShop projects to use Microsoft Foundry for text embedding and chat.
+    /// </summary>
+    public static IDistributedApplicationBuilder AddFoundry(this IDistributedApplicationBuilder builder,
+        IResourceBuilder<DotnetProjectResource> catalogApi,
+        IResourceBuilder<DotnetProjectResource> webApp)
+    {
+        var foundry = builder.AddFoundry("foundry");
+        var chat = foundry.AddDeployment("chatModel", "gpt-4.1-mini", "2025-04-14", "OpenAI");
+        var textEmbedding = foundry.AddDeployment("textEmbeddingModel", "text-embedding-3-small", "1", "OpenAI");
 
-            catalogApi.WithReference(textEmbedding);
-            webApp.WithReference(chat);
-        }
+        catalogApi.WithReference(textEmbedding).WaitFor(textEmbedding);
+        webApp.WithReference(chat).WaitFor(chat);
 
         return builder;
     }
@@ -132,8 +65,8 @@ internal static class Extensions
     /// Configures eShop projects to use Ollama for text embedding and chat.
     /// </summary>
     public static IDistributedApplicationBuilder AddOllama(this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> catalogApi,
-        IResourceBuilder<ProjectResource> webApp)
+        IResourceBuilder<DotnetProjectResource> catalogApi,
+        IResourceBuilder<DotnetProjectResource> webApp)
     {
         var ollama = builder.AddOllama("ollama")
             .WithDataVolume()
@@ -153,9 +86,9 @@ internal static class Extensions
     }
 
     public static IResourceBuilder<YarpResource> ConfigureMobileBffRoutes(this IResourceBuilder<YarpResource> builder,
-        IResourceBuilder<ProjectResource> catalogApi,
-        IResourceBuilder<ProjectResource> orderingApi,
-        IResourceBuilder<ProjectResource> identityApi)
+        IResourceBuilder<DotnetProjectResource> catalogApi,
+        IResourceBuilder<DotnetProjectResource> orderingApi,
+        IResourceBuilder<DotnetProjectResource> identityApi)
     {
         return builder.WithConfiguration(yarp =>
         {
