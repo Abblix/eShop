@@ -11,7 +11,7 @@ global using Abblix.Oidc.Server.Common.Constants;
 global using Abblix.Oidc.Server.Features.ClientInformation;
 global using Abblix.Oidc.Server.Features.UserAuthentication;
 global using Abblix.Oidc.Server.Features.UserInfo;
-global using Abblix.Oidc.Server.Mvc;
+global using Abblix.Oidc.Server.MinimalApi;
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Builder;
