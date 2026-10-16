@@ -33,9 +33,15 @@ builder.Services.AddIdentityCore<ApplicationUser>()
 // silently keeps whatever the framework default was on the day the app was written.
 builder.Services.Configure<PasswordHasherOptions>(builder.Configuration.GetSection("PasswordHasher"));
 
-// The cookie the server writes at sign-in and reads back on every authorization request.
+// The cookie the server writes at sign-in and reads back on every authorization request. Its name
+// must differ from the clients' cookies: on localhost they share one cookie jar whatever the port,
+// so under the default name the server and the storefront would overwrite each other's session.
 builder.Services.AddAuthentication()
-        .AddCookie(options => options.Events.OnValidatePrincipal = SessionValidation.RejectUsersNoLongerAllowedIn);
+        .AddCookie(options =>
+        {
+            options.Cookie.Name = ".AspNetCore.IdentitySession";
+            options.Events.OnValidatePrincipal = SessionValidation.RejectUsersNoLongerAllowedIn;
+        });
 
 // How long that session lives is a deployment decision rather than a property of the code, so it is
 // bound from configuration. The validation above is not: it is behaviour, and a deployment that could
