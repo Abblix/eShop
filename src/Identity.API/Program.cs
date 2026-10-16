@@ -66,6 +66,7 @@ builder.Services.AddOidcServices(options =>
 
 // A logout the user has to confirm is shown on this application's own page rather than answered with the
 // library's JSON body, which a browser following a client's sign-out would display as it is.
+builder.Services.AddHttpContextAccessor();
 builder.Services.Decorate<IEndSessionResponseFormatter, LogoutConfirmationPage>();
 
 // The library registers the CORS policy the protocol endpoints name, and an empty origin list

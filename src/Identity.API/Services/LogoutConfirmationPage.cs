@@ -2,6 +2,7 @@ using Abblix.Oidc.Server.Common;
 using Abblix.Oidc.Server.Endpoints.EndSession.Interfaces;
 using Abblix.Oidc.Server.MinimalApi.Formatters.Interfaces;
 using Abblix.Utils;
+using Microsoft.AspNetCore.WebUtilities;
 using EndSessionRequest = Abblix.Oidc.Server.Model.EndSessionRequest;
 
 namespace eShop.Identity.API.Services
@@ -15,7 +16,10 @@ namespace eShop.Identity.API.Services
     /// instead and hands it that value together with the parameters of the original request, so that the page can
     /// send all of them back to the end-session endpoint once the user agrees.
     /// </remarks>
-    public class LogoutConfirmationPage(IEndSessionResponseFormatter inner) : IEndSessionResponseFormatter
+    public class LogoutConfirmationPage(
+        IEndSessionResponseFormatter inner,
+        IHttpContextAccessor httpContextAccessor,
+        LinkGenerator linkGenerator) : IEndSessionResponseFormatter
     {
         /// <summary>
         /// Marks a page shown again because the answer the user gave was no longer accepted, typically because
@@ -28,20 +32,20 @@ namespace eShop.Identity.API.Services
             EndSessionRequest request, Result<IEndSessionResponse, OidcError> response)
         {
             if (response.TryGetSuccess(out var success) && success is ConfirmationRequired confirmation)
-                return Task.FromResult(Results.RedirectToRoute("default", PageValues(request, confirmation.Confirmation)));
+                return Task.FromResult(Results.Redirect(PageUrl(request, confirmation.Confirmation)));
 
             return inner.FormatResponseAsync(request, response);
         }
 
         /// <summary>
-        /// The page's controller and action, and the parameters it posts back as its query.
+        /// The page's address with the parameters it posts back as its query.
         /// </summary>
         /// <remarks>
-        /// Resolved through the conventional route MapDefaultControllerRoute registers, when the redirect is written,
-        /// so the address follows the controller's route and the application's base path; route values the
-        /// template does not use become the query string.
+        /// A path, not an absolute address, so the browser stays on the scheme and host it reached this server on
+        /// rather than one rebuilt from the request's Host header. The path comes from the page's action, so it
+        /// follows whatever route maps it and the application's base path.
         /// </remarks>
-        private static RouteValueDictionary PageValues(EndSessionRequest request, string confirmation)
+        private string PageUrl(EndSessionRequest request, string confirmation)
         {
             KeyValuePair<string, string>[] parameters =
             [
@@ -57,15 +61,12 @@ namespace eShop.Identity.API.Services
                     : null),
             ];
 
-            var values = new RouteValueDictionary
-            {
-                ["controller"] = "Account",
-                ["action"] = nameof(Controllers.AccountController.Logout),
-            };
-            foreach (var (name, value) in parameters.Where(parameter => parameter.Value != null))
-                values[name] = value;
+            var httpContext = httpContextAccessor.HttpContext
+                ?? throw new InvalidOperationException("The logout confirmation is formatted outside a request.");
+            var path = linkGenerator.GetPathByAction(httpContext, nameof(Controllers.AccountController.Logout), "Account")
+                ?? throw new InvalidOperationException("The logout page is not mapped.");
 
-            return values;
+            return QueryHelpers.AddQueryString(path, parameters.Where(parameter => parameter.Value != null));
         }
     }
 }
