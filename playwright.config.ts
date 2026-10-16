@@ -26,6 +26,10 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     ...devices['Desktop Chrome'],
+
+    /* The identity provider serves its protocol endpoints over HTTPS only, so the run uses the
+       ASP.NET Core development certificate, which the browser does not trust. */
+    ignoreHTTPSErrors: true,
   },
 
   /* Configure projects for major browsers */
@@ -86,6 +90,7 @@ export default defineConfig({
   webServer: {
     command: 'dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj',
     url: 'http://localhost:5045',
+    ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
     stderr: 'pipe',
     stdout: 'pipe',

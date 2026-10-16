@@ -30,10 +30,13 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps chromium
+    # The identity provider serves its protocol endpoints over HTTPS only, so the services call
+    # each other over HTTPS with the development certificate and have to trust it.
+    - name: Trust the development certificate
+      run: dotnet dev-certs https --trust
     - name: Run Playwright tests
       run: npm run test:e2e
       env:
-        ESHOP_USE_HTTP_ENDPOINTS: 1
         USERNAME1: bob
         PASSWORD: Pass123$
     - uses: actions/upload-artifact@v4
