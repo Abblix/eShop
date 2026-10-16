@@ -81,6 +81,27 @@ namespace eShop.Identity.API.Controllers
             return Redirect(authorizeUrl);
         }
 
+        /// <summary>
+        /// Asks the user to confirm a logout the server would not perform on its own, such as one whose ID token hint
+        /// names a session other than the current one.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="LogoutConfirmationPage"/> sends the browser here with the parameters of the original request
+        /// and the value the server issued for the answer; the page posts them back to the end-session endpoint.
+        /// </remarks>
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            var endSessionEndpoint = endpointResolver.Resolve(OidcEndpoints.EndSession)
+                ?? throw new InvalidOperationException("The end-session endpoint is not mapped.");
+
+            return View(new LogoutViewModel
+            {
+                EndSessionEndpoint = endSessionEndpoint,
+                Parameters = [.. Request.Query.Select(parameter => KeyValuePair.Create(parameter.Key, parameter.Value.ToString()))],
+            });
+        }
+
         [HttpGet]
         public IActionResult AccessDenied() => View();
     }

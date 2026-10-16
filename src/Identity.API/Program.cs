@@ -1,5 +1,7 @@
+using Abblix.DependencyInjection;
 using Abblix.Oidc.Server.AspNetCore;
 using Abblix.Oidc.Server.Common.Interfaces;
+using Abblix.Oidc.Server.MinimalApi.Formatters.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +63,10 @@ builder.Services.AddOidcServices(options =>
     options.Scopes = oidcConfiguration.Scopes;
     options.Clients = oidcConfiguration.ToClientInfos();
 });
+
+// A logout the user has to confirm is shown on this application's own page rather than answered with the
+// library's JSON body, which a browser following a client's sign-out would display as it is.
+builder.Services.Decorate<IEndSessionResponseFormatter, LogoutConfirmationPage>();
 
 // The library registers the CORS policy the protocol endpoints name, and an empty origin list
 // means any origin may read them. eShop has no browser-based client, so the complete list of
