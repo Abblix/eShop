@@ -9,6 +9,7 @@ global using System.Threading.Tasks;
 global using Abblix.Jwt;
 global using Abblix.Oidc.Server.Common.Constants;
 global using Abblix.Oidc.Server.Features.ClientInformation;
+global using Abblix.Oidc.Server.Features.MultiTenancy;
 global using Abblix.Oidc.Server.Features.UserAuthentication;
 global using Abblix.Oidc.Server.Features.UserInfo;
 global using Abblix.Oidc.Server.MinimalApi;

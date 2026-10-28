@@ -23,6 +23,11 @@ public sealed class OrderingApiFixture : WebApplicationFactory<Program>, IAsyncL
         Postgres = appBuilder.AddPostgres("OrderingDB");
         IdentityDB = appBuilder.AddPostgres("IdentityDB");
         IdentityApi = appBuilder.AddProject<Projects.Identity_API>("identity-api").WithReference(IdentityDB);
+
+        // The identity server's issuer is the address the API under test is given as Identity:Url, over http here
+        IdentityApi
+            .WithEnvironment("Oidc__Issuer", IdentityApi.GetEndpoint("http"))
+            .WithEnvironment("Oidc__AllowHttpIssuer", "true");
         _app = appBuilder.Build();
     }
 

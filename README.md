@@ -128,6 +128,14 @@ protocol endpoints and knows only where to send an unauthenticated user, which i
 fork was built to show. What it issues afterwards is the token behind the claims the checkout form
 fills itself from.
 
+Every token names its issuer, and the services accept a token only when that issuer is exactly the
+address they were given for the identity server. Abblix OIDC Server 3.0 takes the issuer from
+configuration rather than from each request, so the AppHost hands `identity-api` the same
+address as its `Oidc__Issuer` that it hands every other service as the identity server's. Running
+`identity-api` without the AppHost means setting `Oidc__Issuer` yourself. The server answers only requests
+addressed to the issuer's host, so the MAUI app in the Android emulator, which reaches your
+machine as `10.0.2.2` rather than `localhost`, cannot sign in.
+
 ### Running tests
 
 Run the server tests:

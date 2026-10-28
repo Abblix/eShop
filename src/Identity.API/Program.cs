@@ -1,5 +1,7 @@
 using Abblix.DependencyInjection;
 using Abblix.Oidc.Server.AspNetCore;
+using Abblix.Oidc.Server.AspNetCore.MultiTenancy;
+using Abblix.Oidc.Server.Features.Consents;
 using Abblix.Oidc.Server.Common.Interfaces;
 using Abblix.Oidc.Server.MinimalApi.Formatters.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -57,12 +59,30 @@ builder.Services.Configure<CookieAuthenticationOptions>(
 var oidcConfiguration = builder.Configuration.GetSection("Oidc").Get<OidcConfiguration>()
     ?? throw new InvalidOperationException("The Oidc configuration section is missing.");
 
+// Abblix OIDC Server 3.0 serves its settings per tenant, and eShop is one: one issuer, one client registry.
+// The issuer is fixed rather than taken from each request, since a request reaches the tenant only at its
+// issuer's host and every token carries it. It has to equal, character for character, the address the AppHost
+// hands the resource servers and the web clients as the identity server's, because they accept no other.
+var issuer = oidcConfiguration.Issuer
+    ?? throw new InvalidOperationException(
+        "Oidc:Issuer is not set. Set it to the address the clients reach the identity server at.");
+
 builder.Services.AddOidcServices(options =>
 {
-    options.LoginUri = new Uri("/Account/Login", UriKind.Relative);
-    options.Scopes = oidcConfiguration.Scopes;
-    options.Clients = oidcConfiguration.ToClientInfos();
+    options.AllowHttpIssuer = oidcConfiguration.AllowHttpIssuer;
+    options.Tenants.Add(new TenantDefinition
+    {
+        Id = "eshop",
+        Issuer = issuer,
+        LoginUri = new Uri("/Account/Login", UriKind.Relative),
+        Scopes = oidcConfiguration.Scopes,
+        Clients = oidcConfiguration.ToClientInfos(),
+    });
 });
+
+// Every client registered above is part of eShop itself, so there is no third party the user would be asked to
+// trust and no consent screen to show.
+builder.Services.AddConsentGrantedForEveryClient();
 
 // A logout the user has to confirm is shown on this application's own page rather than answered with the
 // library's JSON body, which a browser following a client's sign-out would display as it is.
@@ -97,7 +117,10 @@ app.UseStaticFiles();
 
 // This cookie policy fixes login issues with Chrome 80+ using HTTP
 app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
-app.UseRouting();
+
+// Resolves the request to its tenant and then routes it, so it takes the place of UseRouting: the server refuses
+// to start without it, and refuses it placed after a routing call of the application's own.
+app.UseMultiTenancy();
 
 // The protocol endpoints carry CORS metadata, because a browser-based client reads the discovery
 // document and the JWKS cross-origin. Without this call every one of them answers 500: routing
