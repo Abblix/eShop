@@ -132,9 +132,11 @@ Every token names its issuer, and the services accept a token only when that iss
 address they were given for the identity server. Abblix OIDC Server 3.0 takes the issuer from
 configuration rather than from each request, so the AppHost hands `identity-api` the same
 address as its `Oidc__Issuer` that it hands every other service as the identity server's. Running
-`identity-api` without the AppHost means setting `Oidc__Issuer` yourself. The server answers only requests
-addressed to the issuer's host, so the MAUI app in the Android emulator, which reaches your
-machine as `10.0.2.2` rather than `localhost`, cannot sign in.
+`identity-api` without the AppHost means setting `Oidc__Issuer` yourself. The server writes the configured issuer into
+discovery and every token whatever host name a request arrives with, and the MAUI app's OpenID
+client refuses a discovery document whose issuer differs from the address it asked. In the
+Android emulator the app reaches your machine as `10.0.2.2` rather than `localhost`, so it
+cannot sign in.
 
 ### Running tests
 

@@ -59,8 +59,7 @@ var oidcConfiguration = builder.Configuration.GetSection("Oidc").Get<OidcConfigu
     ?? throw new InvalidOperationException("The Oidc configuration section is missing.");
 
 // Abblix OIDC Server 3.0 serves its settings per tenant, and eShop is one: one issuer, one client registry.
-// The issuer is fixed rather than taken from each request, since a request reaches the tenant only at its
-// issuer's host and every token carries it. It has to equal, character for character, the address the AppHost
+// The issuer is fixed rather than taken from each request, because every token carries it. It has to equal, character for character, the address the AppHost
 // hands the resource servers and the web clients as the identity server's, because they accept no other.
 var issuer = oidcConfiguration.Issuer
     ?? throw new InvalidOperationException(

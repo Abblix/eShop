@@ -22,8 +22,8 @@ namespace eShop.Identity.API.Configuration
 
         /// <summary>
         /// Lets the server accept an http issuer. The AppHost sets it only for its http run, made when
-        /// ESHOP_USE_HTTP_ENDPOINTS=1 (the Playwright journeys in CI), and the Ordering functional tests set it for
-        /// theirs; every other run keeps the https requirement OpenID Connect places on an issuer.
+        /// ESHOP_USE_HTTP_ENDPOINTS=1, and the Ordering functional tests set it for theirs; every other run keeps
+        /// the https requirement OpenID Connect places on an issuer.
         /// </summary>
         public bool AllowHttpIssuer { get; set; }
 

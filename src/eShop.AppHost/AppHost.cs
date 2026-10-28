@@ -34,7 +34,8 @@ var identityEndpoint = identityApi.GetEndpoint(launchProfileName);
 identityApi.WithEnvironment("Oidc__Issuer", identityEndpoint);
 if (launchProfileName == "http")
 {
-    // An issuer over http is refused unless allowed explicitly; only the http run for the Playwright tests needs it
+    // An issuer over http is refused unless allowed explicitly. Only the http run needs it, so that identity-api
+    // starts; signing in fails in that run, because the clients are registered at their https addresses.
     identityApi.WithEnvironment("Oidc__AllowHttpIssuer", "true");
 }
     
