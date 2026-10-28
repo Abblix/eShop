@@ -1,6 +1,5 @@
 using Abblix.DependencyInjection;
 using Abblix.Oidc.Server.AspNetCore;
-using Abblix.Oidc.Server.AspNetCore.MultiTenancy;
 using Abblix.Oidc.Server.Features.Consents;
 using Abblix.Oidc.Server.Common.Interfaces;
 using Abblix.Oidc.Server.MinimalApi.Formatters.Interfaces;
@@ -118,9 +117,7 @@ app.UseStaticFiles();
 // This cookie policy fixes login issues with Chrome 80+ using HTTP
 app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
-// Resolves the request to its tenant and then routes it, so it takes the place of UseRouting: the server refuses
-// to start without it, and refuses it placed after a routing call of the application's own.
-app.UseMultiTenancy();
+app.UseRouting();
 
 // The protocol endpoints carry CORS metadata, because a browser-based client reads the discovery
 // document and the JWKS cross-origin. Without this call every one of them answers 500: routing

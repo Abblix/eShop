@@ -65,7 +65,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.19.0" />
     <!-- OpenID Provider -->
-    <PackageVersion Include="Abblix.OIDC.Server.MinimalAPI" Version="3.0.0-dev.0.726" />
+    <PackageVersion Include="Abblix.OIDC.Server.MinimalAPI" Version="3.0.0-dev.0.731" />
     <!-- Scaffolding -->
     <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
     <!-- Grpc -->
