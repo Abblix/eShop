@@ -10,6 +10,23 @@ namespace eShop.Identity.API.Configuration
     /// </remarks>
     public class OidcConfiguration
     {
+        /// <summary>
+        /// The issuer written into every token and the discovery document.
+        /// </summary>
+        /// <remarks>
+        /// The resource servers and both web clients are given the identity server's address by the AppHost and
+        /// accept a token only when its issuer is exactly that string, so the AppHost hands this server the same
+        /// address as <c>Oidc__Issuer</c>. A run without the AppHost sets it to the address the clients use.
+        /// </remarks>
+        public Uri Issuer { get; set; }
+
+        /// <summary>
+        /// Lets the server accept an http issuer. The AppHost sets it only for its http run, made when
+        /// ESHOP_USE_HTTP_ENDPOINTS=1, and the Ordering functional tests set it for theirs; every other run keeps
+        /// the https requirement OpenID Connect places on an issuer.
+        /// </summary>
+        public bool AllowHttpIssuer { get; set; }
+
         public ScopeDefinition[] Scopes { get; set; } = [];
 
         /// <summary>

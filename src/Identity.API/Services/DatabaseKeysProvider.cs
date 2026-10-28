@@ -16,10 +16,12 @@ namespace eShop.Identity.API.Services
         IDbContextFactory<ApplicationDbContext> contextFactory,
         TimeProvider clock) : IAuthServiceKeysProvider
     {
-        public IAsyncEnumerable<JsonWebKey> GetEncryptionKeys(bool includePrivateKeys = false)
+        public IAsyncEnumerable<JsonWebKey> GetEncryptionKeys(TenantDefinition tenant, bool includePrivateKeys = false)
             => AsyncEnumerable.Empty<JsonWebKey>();
 
-        public async IAsyncEnumerable<JsonWebKey> GetSigningKeys(bool includePrivateKeys = false)
+        // eShop declares a single tenant, so the one key set in the table is that tenant's and the argument
+        // selects nothing.
+        public async IAsyncEnumerable<JsonWebKey> GetSigningKeys(TenantDefinition tenant, bool includePrivateKeys = false)
         {
             await using var db = await contextFactory.CreateDbContextAsync();
 

@@ -28,6 +28,16 @@ var identityApi = builder.AddDotnetProject("identity-api", "../Identity.API", o 
     .WithHttpHealthCheck("/health");
 
 var identityEndpoint = identityApi.GetEndpoint(launchProfileName);
+
+// The identity server writes its issuer into every token as configured, and each service below accepts a token only
+// from the address it is given here, so the identity server is given that same address as its issuer
+identityApi.WithEnvironment("Oidc__Issuer", identityEndpoint);
+if (launchProfileName == "http")
+{
+    // An issuer over http is refused unless allowed explicitly. Only the http run needs it, so that identity-api
+    // starts; signing in fails in that run, because the clients are registered at their https addresses.
+    identityApi.WithEnvironment("Oidc__AllowHttpIssuer", "true");
+}
     
 var basketApi = builder.AddDotnetProject("basket-api", "../Basket.API")
     .WithReference(redis)

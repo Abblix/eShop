@@ -1,0 +1,25 @@
+@model LogoutViewModel
+
+<div class="container">
+    <div class="lead">
+        <h1>Logout</h1>
+        @if (Model.AskedAgain)
+        {
+            <p>Your earlier answer has expired. Would you still like to log out?</p>
+        }
+        else
+        {
+            <p>Would you like to log out?</p>
+        }
+    </div>
+
+    <form action="@Model.EndSessionEndpoint" method="post">
+        @foreach (var parameter in Model.Parameters)
+        {
+            <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+        }
+        <div class="form-group">
+            <button class="btn btn-primary">Yes</button>
+        </div>
+    </form>
+</div>
