@@ -1,5 +1,8 @@
+using Abblix.DependencyInjection;
 using Abblix.Oidc.Server.AspNetCore;
+using Abblix.Oidc.Server.Features.Consents;
 using Abblix.Oidc.Server.Common.Interfaces;
+using Abblix.Oidc.Server.MinimalApi.Formatters.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,12 +58,34 @@ builder.Services.Configure<CookieAuthenticationOptions>(
 var oidcConfiguration = builder.Configuration.GetSection("Oidc").Get<OidcConfiguration>()
     ?? throw new InvalidOperationException("The Oidc configuration section is missing.");
 
+// Abblix OIDC Server 3.0 serves its settings per tenant, and eShop is one: one issuer, one client registry.
+// The issuer is fixed rather than taken from each request, because every token carries it. It has to equal, character for character, the address the AppHost
+// hands the resource servers and the web clients as the identity server's, because they accept no other.
+var issuer = oidcConfiguration.Issuer
+    ?? throw new InvalidOperationException(
+        "Oidc:Issuer is not set. Set it to the address the clients reach the identity server at.");
+
 builder.Services.AddOidcServices(options =>
 {
-    options.LoginUri = new Uri("/Account/Login", UriKind.Relative);
-    options.Scopes = oidcConfiguration.Scopes;
-    options.Clients = oidcConfiguration.ToClientInfos();
+    options.AllowHttpIssuer = oidcConfiguration.AllowHttpIssuer;
+    options.Tenants.Add(new TenantDefinition
+    {
+        Id = "eshop",
+        Issuer = issuer,
+        LoginUri = new Uri("/Account/Login", UriKind.Relative),
+        Scopes = oidcConfiguration.Scopes,
+        Clients = oidcConfiguration.ToClientInfos(),
+    });
 });
+
+// Every client registered above is part of eShop itself, so there is no third party the user would be asked to
+// trust and no consent screen to show.
+builder.Services.AddConsentGrantedForEveryClient();
+
+// A logout the user has to confirm is shown on this application's own page rather than answered with the
+// library's JSON body, which a browser following a client's sign-out would display as it is.
+builder.Services.AddHttpContextAccessor();
+builder.Services.Decorate<IEndSessionResponseFormatter, LogoutConfirmationPage>();
 
 // The library registers the CORS policy the protocol endpoints name, and an empty origin list
 // means any origin may read them. eShop has no browser-based client, so the complete list of
@@ -90,6 +115,7 @@ app.UseStaticFiles();
 
 // This cookie policy fixes login issues with Chrome 80+ using HTTP
 app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
+
 app.UseRouting();
 
 // The protocol endpoints carry CORS metadata, because a browser-based client reads the discovery
@@ -100,9 +126,10 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// The protocol endpoints are attribute-routed controllers supplied by the library, so they are
-// mapped the same way any other controller is.
-app.MapControllers();
+// The protocol endpoints are Minimal API route handlers supplied by the library, mapped at the paths
+// its options give them; an endpoint that is not enabled is not mapped at all. The default route below
+// serves this application's own sign-in screen, which stays an MVC controller with views.
+app.MapOidcEndpoints();
 app.MapDefaultControllerRoute();
 
 app.Run();

@@ -14,7 +14,8 @@ namespace eShop.Identity.API.Services
     /// </remarks>
     public class UserInfoProvider(UserManager<ApplicationUser> userManager) : IUserInfoProvider
     {
-        public async Task<JsonObject?> GetUserInfoAsync(AuthSession authSession, IEnumerable<string> requestedClaims)
+        public async Task<JsonObject?> GetUserInfoAsync(
+            TenantDefinition tenant, AuthSession authSession, IEnumerable<string> requestedClaims)
         {
             var user = await userManager.FindByIdAsync(authSession.Subject);
             if (user is null)
